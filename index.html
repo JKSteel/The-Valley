@@ -1,0 +1,112 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Valley</title>
+
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05060a; }
+  canvas { display: block; }
+
+  #ui {
+    position: fixed; inset: 0; pointer-events: none;
+    font: 12px/1.5 ui-monospace, "Cascadia Code", Consolas, monospace;
+    color: #cfd6e4; text-shadow: 0 1px 3px rgba(0,0,0,.8);
+  }
+
+  /* Click-to-start veil */
+  #veil {
+    position: fixed; inset: 0; display: grid; place-content: center;
+    text-align: center; gap: 1.2rem; cursor: pointer;
+    background: radial-gradient(ellipse at 50% 60%, #12182a 0%, #05060a 70%);
+    color: #cfd6e4; font: 300 14px/1.8 ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: .18em; text-transform: uppercase;
+    transition: opacity .8s ease;
+  }
+  #veil h1 { font-weight: 200; font-size: 2.4rem; letter-spacing: .4em; margin: 0; }
+  #veil.hidden { opacity: 0; pointer-events: none; }
+  #veil small { opacity: .45; letter-spacing: .12em; text-transform: none; }
+
+  #err {
+    display: none; max-width: 60ch; margin: 0 auto; padding: 12px 14px;
+    background: rgba(60,14,20,.75); border: 1px solid rgba(255,140,140,.35);
+    border-radius: 6px; color: #ffc9c9; text-align: left; white-space: pre-wrap;
+    font: 11px/1.6 ui-monospace, Consolas, monospace;
+    letter-spacing: normal; text-transform: none;
+  }
+
+  /* Compass — matters here, the palette is directional */
+  #compass {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    letter-spacing: .3em; opacity: .5;
+  }
+
+  #stats { position: fixed; bottom: 10px; left: 12px; opacity: .35; }
+
+  /* #panel lives outside #ui so it can take pointer events — which means it
+     must set its own typography rather than inheriting it. */
+  #panel {
+    position: fixed; top: 12px; right: 12px; pointer-events: auto;
+    background: rgba(8,10,18,.88); border: 1px solid rgba(200,215,255,.16);
+    border-radius: 6px; padding: 12px 14px; width: 236px;
+    backdrop-filter: blur(8px);
+    font: 12px/1.5 ui-monospace, "Cascadia Code", Consolas, monospace;
+    color: #e6ecf7;
+  }
+  #panel.hidden { display: none; }
+  #panel h2 { margin: 0 0 10px; font-size: 10px; letter-spacing: .22em;
+               text-transform: uppercase; color: #8fa3c4; font-weight: 500; }
+  #panel label { display: flex; justify-content: space-between; gap: 8px;
+                 margin: 9px 0 3px; font-size: 11px; color: #cbd6e8; }
+  #panel label span:last-child { color: #f0b878; }
+  #panel input[type=range] { width: 100%; accent-color: #e0a060; height: 14px; }
+  #panel button {
+    width: 100%; margin-top: 14px; padding: 7px; cursor: pointer;
+    background: rgba(224,160,96,.14); border: 1px solid rgba(224,160,96,.4);
+    border-radius: 4px; color: #f0b878; font: inherit; font-size: 11px;
+    letter-spacing: .06em; transition: background .15s;
+  }
+  #panel button:hover { background: rgba(224,160,96,.26); }
+  #panel .hint { margin-top: 12px; padding-top: 10px; font-size: 10px; line-height: 1.7;
+                 color: #7d8ba6; border-top: 1px solid rgba(200,215,255,.1); }
+</style>
+
+<div id="ui">
+  <div id="compass">N</div>
+  <div id="stats"></div>
+</div>
+
+<div id="panel" class="hidden">
+  <h2>Light</h2>
+  <div id="panel-controls"></div>
+  <div class="hint">H — panel (releases mouse)<br>Click the world to look again<br>WASD — walk · F — fly · Shift — run<br>Space/C — up/down · T — jump to trail</div>
+</div>
+
+<div id="veil">
+  <h1>The Valley</h1>
+  <div>Click to enter</div>
+  <small>WASD to walk · F to fly · mouse to look · H for controls</small>
+  <pre id="err"></pre>
+</div>
+
+<script>
+  // Surface startup failures on the veil — a module or shader error otherwise
+  // looks exactly like "clicking does nothing".
+  window.valleyError = (msg) => {
+    const err = document.getElementById('err');
+    err.textContent = String(msg);
+    err.style.display = 'block';
+    document.getElementById('veil').classList.remove('hidden');
+  };
+  addEventListener('error', (e) => valleyError(e.message || e.error || 'load error'));
+  addEventListener('unhandledrejection', (e) => valleyError(e.reason?.message || e.reason));
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module" src="./src/main.js"></script>
